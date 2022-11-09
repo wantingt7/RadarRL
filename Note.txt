@@ -1,0 +1,19 @@
+2022.10.06 Liang
+dqn注意事项：
+1. step_per_epoch 表示一个epoch中收集到的step总数 -> #(total step) = step_per_epoch * step_per_epoch
+2. step_per_collect 每次训练收集的step数，往往比step_per_epoch小，即一个epoch里可能更新好几次
+3. test是跟着epoch的，即一个epoch末尾测试一次
+4. test_num在dqn里指的是用来测试的环境数量，所以出来的test reward会有std
+*Q：medqn里的train_num和test_num要用env vector嘛? 测试：train_num = 10, test_num = 50
+
+collector注意事项：
+1. episode = 一轮 (8/16 pulse)
+2. 存储reward，永远是按照一个episode存的，不管是给n_step，还是给n_episode
+3. tianshou自带的rew更新，会把一轮每个pulse的reward都叠加存储
+(ptr, ep_rew, ep_len, ep_idx = self.buffer.add(
+                self.data, buffer_ids=ready_env_ids))
+
+新改动：
+1. 改动文件：utils.py, collector.py
+2. 改动描述：所有test_episode部分只看一轮最后一个pulse的reward，因为为pd，所以在0，1之间
+            最后的test_rew纵轴将整个变为0，1之间
