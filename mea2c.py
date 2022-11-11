@@ -78,20 +78,6 @@ def get_args():
     return args
 
 
-def train_models(model, samples_real):
-    pass
-
-# Use dqn policy in tianshou
-def train_policy(samples_fic):
-    pass
-
-def test_policy_fic():
-    pass
-
-def test_policy_real():
-    pass
-
-
 def main():
     torch.set_num_threads(1)  # for poor CPU
     args = get_args()
