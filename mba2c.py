@@ -144,7 +144,7 @@ def main():
     rew, rew_std = test_result["rew"], test_result["rew_std"]
     if best_reward < rew:
         best_reward, best_reward_std = rew, rew_std
-    print(f"Epoch ##{epoch1}: test_reward: {rew:.6f} ± {rew_std:.6f}, best_rew"
+    print(f"Initialize: test_reward: {rew:.6f} ± {rew_std:.6f}, best_rew"
         f"ard: {best_reward:.6f} ± {best_reward_std:.6f}")
 
     for epoch1 in range(args.outer_epoch_num):

@@ -64,20 +64,6 @@ def get_args():
     return args
 
 
-def train_models(model, samples_real):
-    pass
-
-# Use dqn policy in tianshou
-def train_policy(samples_fic):
-    pass
-
-def test_policy_fic():
-    pass
-
-def test_policy_real():
-    pass
-
-
 def main():
     args = get_args()
     # Set seed
@@ -100,6 +86,7 @@ def main():
     # Initialize model
     env_model = gym.make(args.env_model)
     env_model.set_jammer_type(args.jammer_policy_type)
+
     # check model type
     if args.model_type == 2:
         env_model.set_type(args.model_type)
@@ -132,6 +119,29 @@ def main():
     # Record the reward
     best_reward, best_reward_std = 0, 0
 
+    # utils
+    def save_fn(policy):      # logpath real?? 
+            torch.save(policy.state_dict(), os.path.join(logpath_real, 'policy.pth'))
+
+    def stop_fn(mean_rewards):
+        return mean_rewards >= env.spec.reward_threshold
+
+    def train_fn(epoch, env_step):
+        if env_step <= 10000:
+            policy.set_eps(args.eps_train)
+        elif env_step <= 50000:
+            eps = args.eps_train - (env_step - 10000) / \
+                40000 * (0.9 * args.eps_train)
+            policy.set_eps(eps)
+        else:
+            policy.set_eps(0.1 * args.eps_train)
+
+    def test_fn(epoch, env_step):
+        policy.set_eps(args.eps_test)
+
+    def save_checkpoint_fn(epoch, env_step, gradient_step):
+        pass
+
     # Pretrain model
     nid = 0
     for i in [1, 3]:
@@ -153,7 +163,7 @@ def main():
     rew, rew_std = test_result["rew"], test_result["rew_std"]
     if best_reward < rew:
         best_reward, best_reward_std = rew, rew_std
-    print(f"Epoch ##{epoch1}: test_reward: {rew:.6f} ± {rew_std:.6f}, best_rew"
+    print(f"Initialize: test_reward: {rew:.6f} ± {rew_std:.6f}, best_rew"
         f"ard: {best_reward:.6f} ± {best_reward_std:.6f}")
 
     for epoch1 in range(args.outer_epoch_num):
@@ -176,28 +186,6 @@ def main():
         # train_collector_fic.collect(n_step=args.policy_batch_size * args.policy_training_num)
 
         # Train the policy with fic samples
-        def save_fn(policy):      # logpath real?? 
-            torch.save(policy.state_dict(), os.path.join(logpath_real, 'policy.pth'))
-
-        def stop_fn(mean_rewards):
-            return mean_rewards >= env.spec.reward_threshold
-
-        def train_fn(epoch, env_step):
-            if env_step <= 10000:
-                policy.set_eps(args.eps_train)
-            elif env_step <= 50000:
-                eps = args.eps_train - (env_step - 10000) / \
-                    40000 * (0.9 * args.eps_train)
-                policy.set_eps(eps)
-            else:
-                policy.set_eps(0.1 * args.eps_train)
-
-        def test_fn(epoch, env_step):
-            policy.set_eps(args.eps_test)
-
-        def save_checkpoint_fn(epoch, env_step, gradient_step):
-            pass
-
         # Inner epoch number for model training increases with fic samples becomeing more real 
         if (epoch1 <= 0.2 * args.outer_epoch_num):
             inner_epoch_num = 20
@@ -232,3 +220,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
