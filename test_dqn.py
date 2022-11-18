@@ -61,11 +61,19 @@ def test_dqn(args=get_args()):
     args.action_shape = env.action_space.shape or env.action_space.n
     # train_envs = gym.make(args.task)
     # you can also use tianshou.env.SubprocVectorEnv
-    train_envs = DummyVectorEnv(
-        [lambda: gym.make(args.task) for _ in range(args.training_num)])
+    train_envs_list = []
+    for _ in range(args.training_num):
+        e = gym.make(args.task)
+        e.set_jammer_type(args.jammer_policy_type)
+        train_envs_list.append(lambda:e)
+    train_envs = DummyVectorEnv(train_envs_list)
     # test_envs = gym.make(args.task)
-    test_envs = DummyVectorEnv(
-        [lambda: gym.make(args.task) for _ in range(args.test_num)])
+    test_envs_list = []
+    for _ in range(args.test_num):
+        e = gym.make(args.task)
+        e.set_jammer_type(args.jammer_policy_type)
+        test_envs_list.append(lambda:e)
+    test_envs = DummyVectorEnv(test_envs_list)
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -131,6 +139,7 @@ def test_dqn(args=get_args()):
         pprint.pprint(result)
         # Let's watch its performance!
         env = gym.make(args.task)
+        env.set_jammer_type(args.jammer_policy_type)
         policy.eval()
         policy.set_eps(args.eps_test)
         collector = Collector(policy, env)
