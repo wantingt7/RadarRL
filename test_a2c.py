@@ -37,9 +37,10 @@ def get_args():
                         nargs='*', default=[64, 64])
     parser.add_argument('--imitation-hidden-sizes', type=int,
                         nargs='*', default=[128])
-    parser.add_argument('--training-num', type=int, default=10)
-    parser.add_argument('--test-num', type=int, default=100)
-    parser.add_argument('--logdir', type=str, default='log_temp/test8/policy2/a2c')
+    parser.add_argument('--training-num', type=int, default=1)
+    parser.add_argument('--test-num', type=int, default=1)
+    parser.add_argument('--episode_per_test', type=int, default=100)
+    parser.add_argument('--logdir', type=str, default='log_temp/test_a2c')
     parser.add_argument('--logname-basic', type=str, default='a2c_basic')
     parser.add_argument('--logname-il', type=str, default='a2c_il')
     parser.add_argument('--render', type=float, default=0.)
@@ -114,7 +115,7 @@ def test_a2c_with_il(args=get_args()):
     # trainer
     result = onpolicy_trainer(
         policy, train_collector, test_collector, args.epoch,
-        args.step_per_epoch, args.repeat_per_collect, args.test_num, args.batch_size,
+        args.step_per_epoch, args.repeat_per_collect, args.episode_per_test, args.batch_size,
         episode_per_collect=args.episode_per_collect, stop_fn=stop_fn, save_fn=save_fn_basic,
         logger=logger_basic)
     # assert stop_fn(result['best_reward'])
